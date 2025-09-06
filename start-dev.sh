@@ -1,0 +1,96 @@
+#!/bin/bash
+
+# AI Autograder Development Startup Script
+
+echo "🚀 Starting AI Autograder Development Environment"
+
+# Check if .env file exists
+if [ ! -f ".env" ]; then
+    echo "⚠️  Creating .env file from template..."
+    cp env.example .env
+    echo "📝 Please edit .env file with your OpenAI API key and other settings"
+    exit 1
+fi
+
+# Start database and Redis
+echo "🗄️  Starting PostgreSQL and Redis..."
+docker-compose up -d postgres redis
+
+# Wait for services to be ready
+echo "⏳ Waiting for services to start..."
+sleep 5
+
+# Check if Python virtual environment exists
+if [ ! -d "backend/venv" ]; then
+    echo "🐍 Creating Python virtual environment..."
+    cd backend
+    python -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    cd ..
+fi
+
+# Function to start backend
+start_backend() {
+    echo "🔧 Starting FastAPI backend..."
+    cd backend
+    source venv/bin/activate
+    uvicorn app.main:app --reload --port 8000 &
+    BACKEND_PID=$!
+    cd ..
+}
+
+# Function to start Celery worker
+start_celery() {
+    echo "🔄 Starting Celery worker..."
+    cd backend
+    source venv/bin/activate
+    celery -A app.services.grading_service worker --loglevel=info &
+    CELERY_PID=$!
+    cd ..
+}
+
+# Function to start frontend
+start_frontend() {
+    echo "⚛️  Starting React frontend..."
+    cd frontend
+    if [ ! -d "node_modules" ]; then
+        echo "📦 Installing Node.js dependencies..."
+        npm install
+    fi
+    npm start &
+    FRONTEND_PID=$!
+    cd ..
+}
+
+# Start all services
+start_backend
+start_celery
+start_frontend
+
+echo ""
+echo "✅ All services started!"
+echo ""
+echo "🌐 Frontend: http://localhost:3000"
+echo "🔧 Backend API: http://localhost:8000"
+echo "📚 API Docs: http://localhost:8000/docs"
+echo ""
+echo "Press Ctrl+C to stop all services"
+
+# Function to cleanup on exit
+cleanup() {
+    echo ""
+    echo "🛑 Stopping services..."
+    kill $BACKEND_PID 2>/dev/null
+    kill $CELERY_PID 2>/dev/null
+    kill $FRONTEND_PID 2>/dev/null
+    docker-compose stop
+    echo "✅ All services stopped"
+    exit 0
+}
+
+# Trap Ctrl+C
+trap cleanup SIGINT
+
+# Wait for user to stop
+wait
