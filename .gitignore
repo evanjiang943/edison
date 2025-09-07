@@ -1,1 +1,15 @@
 node_modules
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv/
+venv/
+env/
+backend/venv/
+backend/*.db
+backend/autograder.db
+backend/uploads/
+.DS_Store
+*.log
