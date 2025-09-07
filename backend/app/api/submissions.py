@@ -1,6 +1,7 @@
 import os
 import uuid
-from typing import List
+from typing import List, Optional
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -22,10 +23,11 @@ class SubmissionResponse(BaseModel):
     original_filename: str
     status: SubmissionStatus
     total_score: int
-    parsed_json: dict = None
+    parsed_json: Optional[dict] = None
+    created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 @router.post("/{assignment_id}", response_model=SubmissionResponse)

@@ -12,6 +12,27 @@ if [ ! -f ".env" ]; then
     exit 1
 fi
 
+# Check if Redis is running (for local development)
+if ! command -v redis-cli &> /dev/null; then
+    echo "⚠️  Redis not found. Please install Redis:"
+    echo "   macOS: brew install redis && brew services start redis"
+    echo "   Ubuntu: sudo apt-get install redis-server && sudo systemctl start redis-server"
+    exit 1
+fi
+
+if ! redis-cli ping &> /dev/null; then
+    echo "⚠️  Redis is not running. Starting Redis..."
+    if command -v brew &> /dev/null; then
+        brew services start redis
+    elif command -v systemctl &> /dev/null; then
+        sudo systemctl start redis-server
+    else
+        echo "❌ Please start Redis manually"
+        exit 1
+    fi
+    sleep 2
+fi
+
 # Start database and Redis
 echo "🗄️  Starting PostgreSQL and Redis..."
 docker-compose up -d postgres redis
@@ -26,7 +47,7 @@ if [ ! -d "backend/venv" ]; then
     cd backend
     python -m venv venv
     source venv/bin/activate
-    pip install -r requirements.txt
+    pip install -r ../requirements.txt
     cd ..
 fi
 
