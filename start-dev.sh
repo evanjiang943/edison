@@ -33,13 +33,22 @@ if ! redis-cli ping &> /dev/null; then
     sleep 2
 fi
 
-# Start database and Redis
-echo "🗄️  Starting PostgreSQL and Redis..."
-docker-compose up -d postgres redis
+# Start Redis (local installation)
+echo "🗄️  Starting Redis..."
+if ! redis-cli ping &> /dev/null; then
+    echo "⚠️  Redis is not running. Starting Redis..."
+    if command -v brew &> /dev/null; then
+        brew services start redis
+    elif command -v systemctl &> /dev/null; then
+        sudo systemctl start redis-server
+    else
+        echo "❌ Please start Redis manually: redis-server"
+        exit 1
+    fi
+    sleep 2
+fi
 
-# Wait for services to be ready
-echo "⏳ Waiting for services to start..."
-sleep 5
+echo "✅ Redis is running"
 
 # Check if Python virtual environment exists
 if [ ! -d "backend/venv" ]; then
@@ -105,8 +114,8 @@ cleanup() {
     kill $BACKEND_PID 2>/dev/null
     kill $CELERY_PID 2>/dev/null
     kill $FRONTEND_PID 2>/dev/null
-    docker-compose stop
     echo "✅ All services stopped"
+    echo "💡 Note: Redis will continue running (use 'brew services stop redis' to stop it)"
     exit 0
 }
 
