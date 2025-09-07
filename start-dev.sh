@@ -19,26 +19,9 @@ if ! command -v redis-cli &> /dev/null; then
     echo "   Ubuntu: sudo apt-get install redis-server && sudo systemctl start redis-server"
     exit 1
 fi
-<<<<<<< HEAD
-
-if ! redis-cli ping &> /dev/null; then
-    echo "⚠️  Redis is not running. Starting Redis..."
-    if command -v brew &> /dev/null; then
-        brew services start redis
-    elif command -v systemctl &> /dev/null; then
-        sudo systemctl start redis-server
-    else
-        echo "❌ Please start Redis manually"
-        exit 1
-    fi
-    sleep 2
-fi
-
 # Start database and Redis
 echo "🗄️  Starting PostgreSQL and Redis..."
 docker-compose up -d postgres redis
-=======
->>>>>>> evan-dev
 
 if ! redis-cli ping &> /dev/null; then
     echo "⚠️  Redis is not running. Starting Redis..."
