@@ -35,7 +35,8 @@ An AI-assisted grading platform that automates routine evaluation tasks while ke
 ## Quick Start
 
 ### Prerequisites
-- Docker and Docker Compose
+- Docker and Docker Compose OR
+- Python 3.8+, Node.js 16+, Redis
 - OpenAI API key
 
 ### 1. Clone and Setup
@@ -74,7 +75,20 @@ docker-compose logs -f
 ## Development Setup
 
 ### Backend Development
+
+#### Option 1: Local Development (Recommended)
 ```bash
+# Install Redis (macOS)
+brew install redis
+brew services start redis
+
+# Install Redis (Ubuntu/Debian)
+sudo apt-get install redis-server
+sudo systemctl start redis-server
+
+# Install Redis (Windows)
+# Download from https://redis.io/download
+
 cd backend
 
 # Create virtual environment
@@ -84,16 +98,26 @@ source venv/bin/activate  # Linux/Mac
 venv\Scripts\activate  # Windows
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -r ../requirements.txt
 
-# Start database and Redis
-docker-compose up postgres redis -d
+# Create .env file
+cp ../env.example ../.env
+# Edit .env with your OpenAI API key
 
 # Run backend
 uvicorn app.main:app --reload --port 8000
 
 # Start Celery worker (separate terminal)
+cd backend && source venv/bin/activate
 celery -A app.services.grading_service worker --loglevel=info
+```
+
+#### Option 2: Using Docker
+```bash
+# Start database and Redis
+docker-compose up postgres redis -d
+
+# Follow the rest of Option 1 steps
 ```
 
 ### Frontend Development
@@ -222,13 +246,54 @@ Instructors define rubrics in the web interface:
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+## Troubleshooting
+
+### Common Issues
+
+#### File Upload Fails with 500 Error
+**Problem**: Redis is not running
+**Solution**: 
+```bash
+# macOS
+brew services start redis
+
+# Ubuntu/Debian
+sudo systemctl start redis-server
+
+# Check if Redis is running
+redis-cli ping  # Should return "PONG"
+```
+
+#### Backend Import Error: "cannot import name 'BaseSettings'"
+**Problem**: Missing `pydantic-settings` dependency
+**Solution**: 
+```bash
+pip install pydantic-settings==2.1.0
+```
+
+#### Database Connection Error
+**Problem**: PostgreSQL not configured or SQLite path issues
+**Solution**: Use SQLite for development (default in env.example)
+```bash
+DATABASE_URL=sqlite:///./autograder.db
+```
+
+#### Frontend Heroicons Error
+**Problem**: Heroicons v1/v2 version mismatch
+**Solution**: Already fixed in package.json, but if you see errors:
+```bash
+cd frontend
+npm install @heroicons/react@^2.0.18
+```
+
 ## Support
 
 For issues and questions:
-1. Check the documentation
-2. Search existing issues
-3. Create a new issue with detailed description
-4. Include logs and error messages
+1. Check the troubleshooting section above
+2. Check the documentation
+3. Search existing issues
+4. Create a new issue with detailed description
+5. Include logs and error messages
 
 ## Roadmap
 

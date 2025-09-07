@@ -11,6 +11,7 @@ import Submissions from './pages/Submissions';
 import SubmissionUpload from './pages/SubmissionUpload';
 import Grading from './pages/Grading';
 import GradeReview from './pages/GradeReview';
+import SubmissionDetails from './pages/SubmissionDetails';
 import { isAuthenticated } from './utils/auth';
 
 function App() {
@@ -73,6 +74,14 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <Submissions />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/submissions/:id" element={
+            <ProtectedRoute>
+              <Layout>
+                <SubmissionDetails />
               </Layout>
             </ProtectedRoute>
           } />
