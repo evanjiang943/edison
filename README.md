@@ -48,7 +48,7 @@ An AI-assisted educational platform that automates routine evaluation tasks whil
 ### 1. Clone and Setup
 ```bash
 git clone <repository-url>
-cd autograder
+cd edison
 cp env.example .env
 ```
 
