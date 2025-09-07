@@ -1,0 +1,44 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+
+\title{homework 1}
+\author{Evan Jiang}
+\date{September 2025}
+
+\begin{document}
+
+\maketitle
+
+\section{Q1.1}
+
+(a) (1 point) For every state space graph there are costs on the edges such that
+breadth-first search coincides with uniform-cost search.
+True. If all of the costs are identical, uniform-cost search will be identical to
+breadth-first search, as there is no lower cost edge to be preferenced by uniformcost search.
+(b) (1 point) For every state space graph and costs on the edges there is a heuristic
+function such that uniform-cost search coincides with A* search.
+True. Using the cost of the edge as the heuristic function will make A* search
+identical to uniform-cost search. This is not a consistent heuristic, but is admissible.
+(c) (1 point) Depth-first search always expands at least as many nodes as A* search
+with an admissible heuristic.
+False. If we use the heuristic from (b) above (which is admissible), a long
+path entirely consisting of edges with cost 1 (let’s say 5 edges) will be explored
+partially before a shorter path consisting only of two edges with cost 2 begins
+to be explored. If the shorter path happens to be the one chosen first by DFS,
+the longer path will never be expanded at all, and DFS will expand fewer nodes
+than A*.
+(d) (1 point) Breadth-first search is complete even if zero step costs are allowed.
+True. Breadth-first search disregards cost, so the cost values have no impact on
+its completeness.
+(e) (1 point) Assume that a rook can move on a chessboard any number of squares
+in a straight line, vertically or horizontally, but cannot jump over other pieces.
+Manhattan distance is an admissible heuristic for the problem of moving the
+rook from square A to square B in the smallest number of moves.
+1
+False. An admissible heuristic must not be more than the actual number of
+moves. A rook can move across an entire chessboard from one side to another in
+a single move if the straight line is clear of other pieces. The Manhattan distance
+of this move is more than one (seven, on a standard 8x8 chessboard), so it is not
+an admissible heuristic.
+
+\end{document}

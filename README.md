@@ -1,6 +1,6 @@
-# AI Autograder
+# Edison
 
-An AI-assisted grading platform that automates routine evaluation tasks while keeping human graders in control. Built with FastAPI, React, and OpenAI's GPT models.
+An AI-assisted educational platform that automates routine evaluation tasks while keeping human graders in control. Built with FastAPI, React, and OpenAI's GPT models.
 
 ## Features
 
@@ -30,13 +30,19 @@ An AI-assisted grading platform that automates routine evaluation tasks while ke
 ### Infrastructure
 - **Queue System**: Redis for Celery task management
 - **File Storage**: Local filesystem (expandable to S3)
-- **Containerization**: Docker and Docker Compose for easy deployment
+- **Database**: SQLite for development, PostgreSQL for production
 
 ## Quick Start
 
 ### Prerequisites
+<<<<<<< HEAD
 - Docker and Docker Compose OR
 - Python 3.8+, Node.js 16+, Redis
+=======
+- Python 3.8+
+- Node.js 16+
+- Redis (via Homebrew: `brew install redis`)
+>>>>>>> evan-dev
 - OpenAI API key
 
 ### 1. Clone and Setup
@@ -53,18 +59,35 @@ Edit `.env` file:
 OPENAI_API_KEY=your_openai_api_key_here
 SECRET_KEY=your_secret_key_here
 
-# Optional (defaults provided)
-DATABASE_URL=postgresql://postgres:password@localhost/autograder_db
+# SQLite for development (default)
+DATABASE_URL=sqlite:///./autograder.db
 REDIS_URL=redis://localhost:6379/0
 ```
 
 ### 3. Start Services
 ```bash
-# Start all services
-docker-compose up -d
+# Option 1: Use the automated script
+./start-dev.sh
 
-# Check logs
-docker-compose logs -f
+# Option 2: Start manually
+# Terminal 1 - Start Redis
+brew services start redis
+
+# Terminal 2 - Start Backend
+cd backend
+python -m venv venv
+source venv/bin/activate
+pip install -r ../requirements.txt
+uvicorn app.main:app --reload --port 8000
+
+# Terminal 3 - Start Frontend
+cd frontend
+npm install
+npm start
+
+# Terminal 4 - Start Celery Worker
+cd backend && source venv/bin/activate
+celery -A app.services.grading_service worker --loglevel=info
 ```
 
 ### 4. Access the Application
@@ -223,7 +246,7 @@ Instructors define rubrics in the web interface:
 ### Production Deployment
 1. Set up production environment variables
 2. Configure PostgreSQL and Redis instances
-3. Deploy using Docker Compose or Kubernetes
+3. Deploy using a cloud service (AWS, GCP, Azure, etc.)
 4. Set up reverse proxy (nginx) for HTTPS
 5. Configure file storage (S3 for scale)
 

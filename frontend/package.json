@@ -1,5 +1,5 @@
 {
-  "name": "autograder-frontend",
+  "name": "edison-frontend",
   "version": "1.0.0",
   "private": true,
   "dependencies": {
