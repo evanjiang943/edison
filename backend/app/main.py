@@ -12,8 +12,8 @@ Base.metadata.create_all(bind=engine)
 
 # Create FastAPI app
 app = FastAPI(
-    title="AI Autograder API",
-    description="An AI-assisted grading platform for educational assignments",
+    title="Edison API",
+    description="Edison - An AI-assisted educational platform",
     version="1.0.0"
 )
 
@@ -39,14 +39,14 @@ app.include_router(grades.router, prefix="/api/grades", tags=["Grades"])
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "message": "AI Autograder API is running"}
+    return {"status": "healthy", "message": "Edison API is running"}
 
 # Root endpoint
 @app.get("/")
 async def root():
     """Root endpoint"""
     return {
-        "message": "Welcome to the AI Autograder API",
+        "message": "Welcome to the Edison API",
         "docs": "/docs",
         "health": "/api/health"
     }

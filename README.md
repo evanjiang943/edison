@@ -1,6 +1,6 @@
-# AI Autograder
+# Edison
 
-An AI-assisted grading platform that automates routine evaluation tasks while keeping human graders in control. Built with FastAPI, React, and OpenAI's GPT models.
+An AI-assisted educational platform that automates routine evaluation tasks while keeping human graders in control. Built with FastAPI, React, and OpenAI's GPT models.
 
 ## Features
 

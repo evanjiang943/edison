@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# AI Autograder Development Startup Script
+# Edison Development Startup Script
 
-echo "🚀 Starting AI Autograder Development Environment"
+echo "🚀 Starting Edison Development Environment"
 
 # Check if .env file exists
 if [ ! -f ".env" ]; then
