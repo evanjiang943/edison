@@ -35,6 +35,8 @@ start_backend() {
     echo "🔧 Starting FastAPI backend..."
     cd backend
     source venv/bin/activate
+    # Use SQLite for local development to avoid DB connectivity issues
+    export DATABASE_URL="sqlite:///./autograder.db"
     uvicorn app.main:app --reload --port 8000 &
     BACKEND_PID=$!
     cd ..
@@ -45,6 +47,8 @@ start_celery() {
     echo "🔄 Starting Celery worker..."
     cd backend
     source venv/bin/activate
+    # Ensure Celery uses the same SQLite database URL when running locally
+    export DATABASE_URL="sqlite:///./autograder.db"
     celery -A app.services.grading_service worker --loglevel=info &
     CELERY_PID=$!
     cd ..
