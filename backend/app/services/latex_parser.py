@@ -1,5 +1,5 @@
 import re
-from typing import Dict, List
+from typing import Dict, List, Optional
 from pylatexenc.latex2text import LatexNodes2Text
 
 
@@ -34,9 +34,9 @@ class LatexParser:
         # Clean up the content first
         content = self._clean_latex_content(latex_content)
         
-        # Pattern to match section headers for questions
-        # Matches: \section{Q1}, \section{Question 1}, \section{Problem 1}, etc.
-        section_pattern = r'\\section\{(?:Q|Question|Problem)\s*(\d+)[^}]*\}'
+        # Enhanced pattern to match various question formats
+        # Matches: \section{Q1}, \section{Q1.1}, \section{Question 1}, \section{Problem 1.2}, etc.
+        section_pattern = r'\\section\{(?:Q|Question|Problem)\s*(\d+(?:\.\d+)?)[^}]*\}'
         
         # Find all section matches
         sections = list(re.finditer(section_pattern, content, re.IGNORECASE))
@@ -60,17 +60,69 @@ class LatexParser:
             # Extract the answer content
             answer_latex = content[start_pos:end_pos].strip()
             
-            # Convert LaTeX to plain text
-            try:
-                answer_text = self.latex_converter.latex_to_text(answer_latex)
-                answer_text = self._clean_text(answer_text)
-            except:
-                # If conversion fails, use the raw LaTeX
-                answer_text = answer_latex
+            # Check for subsections within this section (like 1.1, 1.2, etc.)
+            subsection_content = self._extract_subsections(answer_latex)
             
-            questions[f"q{question_num}"] = answer_text
+            if subsection_content:
+                # If we found subsections, add them individually
+                for subsection_id, subsection_text in subsection_content.items():
+                    full_question_id = f"q{question_num}.{subsection_id}"
+                    questions[full_question_id] = subsection_text
+            else:
+                # Convert LaTeX to plain text for the entire section
+                try:
+                    answer_text = self.latex_converter.latex_to_text(answer_latex)
+                    answer_text = self._clean_text(answer_text)
+                except:
+                    # If conversion fails, use the raw LaTeX
+                    answer_text = answer_latex
+                
+                questions[f"q{question_num}"] = answer_text
         
         return questions
+    
+    def _extract_subsections(self, content: str) -> Optional[Dict[str, str]]:
+        """Extract subsections like (a), (b), 1.1, 1.2, etc. from content"""
+        
+        # Patterns to match subsections
+        subsection_patterns = [
+            r'\n\s*\(([a-z])\)\s*',  # (a), (b), (c)
+            r'\n\s*([a-z])\)\s*',    # a), b), c)
+            r'\n\s*([a-z])\.\s*',    # a., b., c.
+            r'\n\s*(\d+)\.\s*',      # 1., 2., 3.
+            r'\n\s*\((\d+)\)\s*',    # (1), (2), (3)
+        ]
+        
+        for pattern in subsection_patterns:
+            matches = list(re.finditer(pattern, content, re.IGNORECASE))
+            if len(matches) >= 2:  # Need at least 2 subsections to consider it valid
+                subsections = {}
+                
+                for i, match in enumerate(matches):
+                    subsection_id = match.group(1)
+                    start_pos = match.end()
+                    
+                    # Find the end position
+                    if i + 1 < len(matches):
+                        end_pos = matches[i + 1].start()
+                    else:
+                        end_pos = len(content)
+                    
+                    # Extract subsection content
+                    subsection_content = content[start_pos:end_pos].strip()
+                    
+                    try:
+                        # Convert LaTeX to plain text
+                        subsection_text = self.latex_converter.latex_to_text(subsection_content)
+                        subsection_text = self._clean_text(subsection_text)
+                    except:
+                        subsection_text = subsection_content
+                    
+                    subsections[subsection_id] = subsection_text
+                
+                return subsections
+        
+        return None
     
     def _fallback_question_extraction(self, content: str) -> Dict[str, str]:
         """Fallback method when section headers are not found"""

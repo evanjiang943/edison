@@ -44,6 +44,14 @@ class LLMGradingService:
             GradingResult with score and feedback
         """
         
+        # Check if API key is properly configured
+        if settings.OPENAI_API_KEY == "your_openai_api_key_here":
+            return GradingResult(
+                score=0,
+                feedback="OpenAI API key not configured. Please set OPENAI_API_KEY in environment variables.",
+                reasoning="Cannot grade without valid API key"
+            )
+        
         # Construct the grading prompt
         prompt = self._build_grading_prompt(
             question, student_answer, answer_key, rubric, max_points
