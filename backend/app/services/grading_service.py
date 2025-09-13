@@ -98,6 +98,7 @@ def trigger_grading(self, submission_id: int):
                 question_no=question_id,
                 ai_score=result.score,
                 ai_feedback=result.feedback,
+                ai_satisfies_rubric=result.satisfies_rubric,
                 final_score=result.score,  # Initially same as AI score
                 final_feedback=result.feedback,  # Initially same as AI feedback
                 human_reviewed=False

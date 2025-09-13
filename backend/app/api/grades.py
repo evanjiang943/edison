@@ -17,12 +17,13 @@ class GradeResponse(BaseModel):
     question_no: str
     ai_score: int
     ai_feedback: str
+    ai_satisfies_rubric: bool
     final_score: int
     final_feedback: str
     human_reviewed: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class GradeUpdate(BaseModel):
