@@ -14,6 +14,7 @@ class Grade(Base):
     # AI-generated scores and feedback
     ai_score = Column(Integer, nullable=False)
     ai_feedback = Column(Text)
+    ai_satisfies_rubric = Column(Boolean, default=False)
     
     # Final scores and feedback (after human review)
     final_score = Column(Integer, nullable=False)

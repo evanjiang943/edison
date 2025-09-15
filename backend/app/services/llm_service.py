@@ -9,6 +9,7 @@ class GradingResult(BaseModel):
     score: int
     feedback: str
     reasoning: Optional[str] = ""
+    satisfies_rubric: Optional[bool] = False
 
 
 class QuestionPart(BaseModel):
@@ -74,7 +75,8 @@ class LLMService:
             return GradingResult(
                 score=0,
                 feedback="OpenAI API key not configured. Please set OPENAI_API_KEY in environment variables.",
-                reasoning="Cannot grade without valid API key"
+                reasoning="Cannot grade without valid API key",
+                satisfies_rubric=False
             )
         
         # Construct the grading prompt
@@ -95,7 +97,8 @@ class LLMService:
                     return GradingResult(
                         score=0,
                         feedback=f"Error in AI grading: {str(e)}. Please review manually.",
-                        reasoning="AI grading failed due to response parsing error."
+                        reasoning="AI grading failed due to response parsing error.",
+                        satisfies_rubric=False
                     )
                 continue
             
@@ -103,7 +106,8 @@ class LLMService:
                 return GradingResult(
                     score=0,
                     feedback=f"Error in AI grading: {str(e)}. Please review manually.",
-                    reasoning=f"Unexpected error: {str(e)}"
+                    reasoning=f"Unexpected error: {str(e)}",
+                    satisfies_rubric=False
                 )
     
     def _build_grading_prompt(
@@ -139,14 +143,18 @@ INSTRUCTIONS:
 1. Compare the student answer to the answer key
 2. Apply the grading criteria from the rubric
 3. Provide a score from 0 to {max_points}
-4. Give constructive feedback explaining the grade
+4. FEEDBACK POLICY: 
+   - If the answer earns FULL POINTS ({max_points}/{max_points}) and fully satisfies the rubric, provide NO feedback (empty string)
+   - If the answer is partially correct or incorrect, provide constructive feedback explaining what was missing or wrong
 5. Be consistent and fair in your grading
+6. Focus feedback on specific improvements needed to meet the rubric requirements
 
 IMPORTANT: Respond with ONLY a valid JSON object in this exact format:
 {{
     "score": <integer from 0 to {max_points}>,
-    "feedback": "<detailed feedback explaining the grade>",
-    "reasoning": "<brief explanation of how you arrived at this score>"
+    "feedback": "<detailed feedback if score < {max_points}, empty string if score = {max_points}>",
+    "reasoning": "<brief explanation of how you arrived at this score>",
+    "satisfies_rubric": <true if score = {max_points}, false otherwise>
 }}
 
 Do not include any text before or after the JSON object.
@@ -541,13 +549,50 @@ class LLMGradingService(LLMService):
     pass
 
 
+def _find_matching_key(question_id: str, available_keys: list) -> str:
+    """
+    Find the best matching key for a question ID
+    
+    Args:
+        question_id: The question ID to match (e.g., "q1.1.b")
+        available_keys: List of available keys in answer_key/rubric
+        
+    Returns:
+        Best matching key or None if no match found
+    """
+    # Exact match first
+    if question_id in available_keys:
+        return question_id
+    
+    # Try to find parent question (e.g., "q1.1.b" -> "q1")
+    parts = question_id.split('.')
+    for i in range(len(parts) - 1, 0, -1):
+        parent_key = '.'.join(parts[:i])
+        if parent_key in available_keys:
+            return parent_key
+    
+    # Try to find by number only (e.g., "q1.1.b" -> "q1")
+    import re
+    match = re.match(r'q(\d+)', question_id)
+    if match:
+        simple_key = f"q{match.group(1)}"
+        if simple_key in available_keys:
+            return simple_key
+    
+    # If we have only one key and it looks like a parent, use it
+    if len(available_keys) == 1:
+        return available_keys[0]
+    
+    return None
+
+
 def grade_submission_questions(
     questions_answers: Dict[str, str],
     answer_key: Dict[str, str],
     rubric: Dict[str, Dict[str, Any]]
 ) -> Dict[str, GradingResult]:
     """
-    Grade all questions in a submission
+    Grade all questions in a submission with flexible question ID matching
     
     Args:
         questions_answers: Dict of question_id -> student_answer
@@ -560,20 +605,35 @@ def grade_submission_questions(
     grading_service = LLMService()
     results = {}
     
+    answer_keys = list(answer_key.keys())
+    rubric_keys = list(rubric.keys())
+    
     for question_id, student_answer in questions_answers.items():
-        if question_id in answer_key:
-            question_rubric = rubric.get(question_id, {})
+        # Find matching answer key
+        answer_key_match = _find_matching_key(question_id, answer_keys)
+        rubric_key_match = _find_matching_key(question_id, rubric_keys)
+        
+        if answer_key_match and rubric_key_match:
+            question_rubric = rubric.get(rubric_key_match, {})
             max_points = question_rubric.get('max_points', 10)
             
             result = grading_service.grade_question(
                 question=f"Question {question_id}",
                 student_answer=student_answer,
-                answer_key=answer_key[question_id],
+                answer_key=answer_key[answer_key_match],
                 rubric=question_rubric,
                 max_points=max_points
             )
             
             results[question_id] = result
+        else:
+            # Create a default grade if no match found
+            results[question_id] = GradingResult(
+                score=0,
+                feedback=f"No matching answer key or rubric found for question {question_id}. Please review manually.",
+                reasoning="Question ID mismatch - unable to grade automatically",
+                satisfies_rubric=False
+            )
     
     return results
 

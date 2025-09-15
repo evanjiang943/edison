@@ -36,15 +36,13 @@ const SubmissionDetails = () => {
       const assignmentResponse = await assignmentsAPI.get(submissionData.assignment_id);
       setAssignment(assignmentResponse.data);
 
-      // Fetch grades if submission is graded
-      if (submissionData.status === 'graded' || submissionData.status === 'reviewed') {
-        try {
-          const gradesResponse = await gradesAPI.getBySubmission(id);
-          setGrades(gradesResponse.data);
-        } catch (gradesError) {
-          console.log('No grades found yet');
-          setGrades([]);
-        }
+      // Always try to fetch grades regardless of status
+      try {
+        const gradesResponse = await gradesAPI.getBySubmission(id);
+        setGrades(gradesResponse.data);
+      } catch (gradesError) {
+        console.log('No grades found yet');
+        setGrades([]);
       }
     } catch (error) {
       setError(error.response?.data?.detail || 'Failed to load submission details');
@@ -163,10 +161,26 @@ const SubmissionDetails = () => {
                 
                 {grade && (
                   <div className="space-y-2">
+                    {/* Show satisfaction status */}
+                    <div className="flex items-center space-x-2">
+                      {grade.ai_satisfies_rubric ? (
+                        <div className="flex items-center space-x-1 text-xs text-green-600 bg-green-50 rounded p-2">
+                          <CheckCircleIcon className="h-4 w-4" />
+                          <span>Fully satisfies rubric</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-1 text-xs text-orange-600 bg-orange-50 rounded p-2">
+                          <ExclamationCircleIcon className="h-4 w-4" />
+                          <span>Needs improvement</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Always show AI feedback */}
                     <div>
                       <p className="text-sm font-medium text-gray-700">AI Feedback:</p>
                       <p className="text-sm text-gray-600 bg-blue-50 rounded p-2">
-                        {grade.ai_feedback}
+                        {grade.ai_feedback || "No specific feedback provided."}
                       </p>
                     </div>
                     
