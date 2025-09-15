@@ -7,6 +7,8 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Assignments from './pages/Assignments';
 import AssignmentForm from './pages/AssignmentForm';
+import AssignmentDashboard from './pages/AssignmentDashboard';
+import EnhancedAssignmentForm from './pages/EnhancedAssignmentForm';
 import Submissions from './pages/Submissions';
 import SubmissionUpload from './pages/SubmissionUpload';
 import Grading from './pages/Grading';
@@ -50,6 +52,22 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <AssignmentForm />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/assignments/new-enhanced" element={
+            <ProtectedRoute>
+              <Layout>
+                <EnhancedAssignmentForm />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/assignments/:id" element={
+            <ProtectedRoute>
+              <Layout>
+                <AssignmentDashboard />
               </Layout>
             </ProtectedRoute>
           } />

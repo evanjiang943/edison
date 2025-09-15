@@ -3,7 +3,7 @@ import uuid
 from typing import List, Optional
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel
 from ..core.database import get_db
 from ..core.auth import get_current_user
@@ -16,10 +16,20 @@ from ..services.grading_service import trigger_grading
 router = APIRouter()
 
 
+class StudentInfo(BaseModel):
+    id: int
+    name: str
+    email: str
+
+    class Config:
+        from_attributes = True
+
+
 class SubmissionResponse(BaseModel):
     id: int
     assignment_id: int
     student_id: int
+    student: Optional[StudentInfo] = None
     original_filename: str
     status: SubmissionStatus
     total_score: int
@@ -120,13 +130,17 @@ def list_submissions(
     
     if current_user.role == UserRole.STUDENT:
         # Students can only see their own submissions
-        submissions = db.query(Submission).filter(
+        submissions = db.query(Submission).options(
+            joinedload(Submission.student)
+        ).filter(
             Submission.assignment_id == assignment_id,
             Submission.student_id == current_user.id
         ).all()
     else:
         # Instructors and TAs can see all submissions
-        submissions = db.query(Submission).filter(
+        submissions = db.query(Submission).options(
+            joinedload(Submission.student)
+        ).filter(
             Submission.assignment_id == assignment_id
         ).all()
     

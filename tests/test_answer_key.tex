@@ -1,0 +1,37 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\title{Sample Assignment - Answer Key}
+\author{Professor Smith}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Question 1}
+Solution for quadratic equation $ax^2 + bx + c = 0$:
+
+\begin{enumerate}
+    \item[(a)] The discriminant is $\Delta = b^2 - 4ac$. This determines the nature of the roots.
+    \item[(b)] Using the quadratic formula: $x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$
+    \item[(c)] If $\Delta > 0$: two distinct real roots; If $\Delta = 0$: one repeated real root; If $\Delta < 0$: two complex conjugate roots
+\end{enumerate}
+
+\section{Question 2}
+Solution for $f(x) = x^3 - 3x^2 + 2x$:
+
+\begin{enumerate}
+    \item[(a)] $f'(x) = 3x^2 - 6x + 2$
+    \item[(b)] Setting $f'(x) = 0$: $3x^2 - 6x + 2 = 0$. Using quadratic formula: $x = \frac{6 \pm \sqrt{36-24}}{6} = \frac{6 \pm 2\sqrt{3}}{6} = 1 \pm \frac{\sqrt{3}}{3}$
+    \item[(c)] Using second derivative test: $f''(x) = 6x - 6$. At $x = 1 - \frac{\sqrt{3}}{3}$: $f''(x) < 0$ (local max). At $x = 1 + \frac{\sqrt{3}}{3}$: $f''(x) > 0$ (local min).
+\end{enumerate}
+
+\section{Question 3}
+Proof using L'Hôpital's rule:
+
+Since both $\lim_{x \to 0} \sin x = 0$ and $\lim_{x \to 0} x = 0$, we have the indeterminate form $\frac{0}{0}$.
+
+By L'Hôpital's rule: $\lim_{x \to 0} \frac{\sin x}{x} = \lim_{x \to 0} \frac{\cos x}{1} = \cos(0) = 1$
+
+\end{document}

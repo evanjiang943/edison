@@ -38,6 +38,7 @@ fi
 
 # Start Redis (local installation)
 echo "🗄️  Starting Redis..."
+
 if ! redis-cli ping &> /dev/null; then
     echo "⚠️  Redis is not running. Starting Redis..."
     if command -v brew &> /dev/null; then

@@ -46,6 +46,12 @@ export const assignmentsAPI = {
   create: (data) => api.post('/assignments', data),
   update: (id, data) => api.put(`/assignments/${id}`, data),
   delete: (id) => api.delete(`/assignments/${id}`),
+  parseFiles: (formData) => api.post('/assignments/parse-files', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  createFromParsed: (formData) => api.post('/assignments/create-from-parsed', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
 };
 
 // Submissions API
